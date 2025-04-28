@@ -8,10 +8,21 @@
     <h1>Управление дисциплинами</h1>
     <p>Добро пожаловать, {{ user.fio }}!</p>
 
-    <p>Здесь вы можете добавлять, редактировать и удалять дисциплины.</p>
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        {% for category, message in messages %}
+          <div style="color: {% if category == 'success' %}green{% else %}red{% endif %};">
+            {{ message }}
+          </div>
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
 
-    <!-- Здесь позже можно будет добавить интерфейс управления дисциплинами -->
-    
+    <form action="{{ url_for('manage_courses_bp.upload_plan') }}" method="post" enctype="multipart/form-data">
+        <input type="file" name="plan_file" accept=".xls,.xlsx" required>
+        <button type="submit">Загрузить учебный план</button>
+    </form>
+
     <a href="{{ url_for('logout') }}">Выйти</a>
 </body>
 </html>
