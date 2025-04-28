@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Главная страница</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <header>
+        <h1>Добро пожаловать, {{ user.fio }}!</h1>
+        <p>Направление: {{ user.direction }}</p>
+        <p>Группа: {{ user.group_number }}</p>
+        <a href="/logout">Выйти</a>
+    </header>
+</body>
+</html>

@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Регистрация</title>
+</head>
+<body>
+    <h1>Регистрация</h1>
+    <form method="POST">
+        <label for="fio">ФИО:</label>
+        <input type="text" id="fio" name="fio" required><br>
+
+        <label for="direction">Направление:</label>
+        <input type="text" id="direction" name="direction" required><br>
+
+        <label for="group_number">Номер группы:</label>
+        <input type="text" id="group_number" name="group_number" required><br>
+
+        <label for="login">Логин:</label>
+        <input type="text" id="login" name="login" required><br>
+
+        <label for="password">Пароль:</label>
+        <input type="password" id="password" name="password" required><br>
+
+        <label for="role">Роль:</label>
+        <select name="role" id="role" required>
+            <option value="студент">Студент</option>
+            <option value="администратор">Администратор</option>
+            <option value="Специалист дирекции">Специалист дирекции</option>
+        </select><br>
+
+        <button type="submit">Зарегистрироваться</button>
+    </form>
+</body>
+</html>
