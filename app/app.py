@@ -45,10 +45,18 @@ def login():
         if not user or not bcrypt.check_password_hash(user.password, password_input):
             return jsonify({"msg": "Неверный логин или пароль"}), 401
 
-        access_token = create_access_token(identity=user.id)
-        session['user_id'] = user.id  # Сохраняем id пользователя в сессии
+        # Сохраняем идентификатор пользователя в сессии
+        session['user_id'] = user.id
 
-        return redirect(url_for('index'))
+        # Отладка: выводим роль пользователя
+        print(f"Роль пользователя: {user.role}")
+
+        # Логика перенаправления в зависимости от роли
+        if user.role == 'Специалист дирекции':
+            return redirect(url_for('manage_courses'))
+        else:
+            return redirect(url_for('index'))
+
     return render_template('login.html')
 
 @app.route('/register', methods=['GET', 'POST'])
@@ -59,7 +67,7 @@ def register():
         group_number = request.form['group_number']
         login = request.form['login']
         password = request.form['password']
-        role = request.form['role']  # Получаем роль из формы
+        role = request.form['role'].strip().capitalize()  # Приводим роль к нормализованному виду
 
         # Хэшируем пароль
         hashed_password = bcrypt.generate_password_hash(password).decode('utf-8')
@@ -70,10 +78,22 @@ def register():
         db.session.add(new_user)
         db.session.commit()
 
+        # Отладка: выводим роль после регистрации
+        print(f"Роль при регистрации: {role}")
+
         return redirect(url_for('login'))
 
     return render_template('register.html')
 
+@app.route('/manage-courses')
+def manage_courses():
+    user_id = session.get('user_id')
+    if not user_id:
+        return redirect(url_for('login'))
+    user = User.query.get(user_id)
+    if user.role != 'Специалист дирекции':
+        return redirect(url_for('index'))
+    return render_template('manage_courses.html', user=user)
 
 @app.route('/logout')
 def logout():
