@@ -100,5 +100,6 @@ def logout():
     session.pop('user_id', None)  # Удаляем пользователя из сессии
     return redirect(url_for('login'))
 
+#fdd
 if __name__ == '__main__':
     app.run(debug=True)
