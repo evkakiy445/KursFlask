@@ -23,6 +23,28 @@
         <button type="submit">Загрузить учебный план</button>
     </form>
 
+    {% if elective_courses %}
+        <h2>Дисциплины по выбору</h2>
+        <table border="1" cellpadding="5" cellspacing="0">
+            <thead>
+                <tr>
+                    <th>Название дисциплины</th>
+                    <th>Семестр</th>
+                    <th>Направление</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for course in elective_courses %}
+                    <tr>
+                        <td>{{ course.name }}</td>
+                        <td>{{ course.semester }}</td>
+                        <td>{{ course.direction.name }}</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% endif %}
+
     <a href="{{ url_for('logout') }}">Выйти</a>
 </body>
 </html>
