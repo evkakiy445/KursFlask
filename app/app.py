@@ -24,7 +24,10 @@ def create_app():
         if not user_id:
             return redirect(url_for('login'))
         user = User.query.get(user_id)
-        return render_template('index.html', user=user)
+        if user.role == 'Специалист дирекции':
+            return redirect(url_for('manage_courses_bp.manage_courses'))
+        else:
+            return render_template('index.html', user=user)
 
     @app.route('/login', methods=['GET', 'POST'])
     def login():
