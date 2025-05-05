@@ -1,10 +1,20 @@
 <!DOCTYPE html>
-<html lang="ru">
-<head>
-    <meta charset="UTF-8">
-    <title>Управление дисциплинами</title>
-</head>
-<body>
+<html>
+    <head>
+        <meta charset="utf-8" http-equiv="X-UA-Compatible" content="IE=edge"/>
+        <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='style_cs.css') }}"/>
+        <link media="all" rel="stylesheet" type="text/css" href="{{ url_for('static', filename='webd.css') }}"/>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.3/jquery.min.js"></script>
+        <script src="{{ url_for('static', filename='webd.js') }}"></script>        
+        <title>{% block title %}Управление дисциплинами{% endblock %}</title>
+    </head>
+    <body>
+        <div id='js_check'>В вашем обозревателе отключен JavaScript либо установлен плагин NoScript. Для корректной работы данного сайта JavaScript необходим.</div>
+        {{header|safe}}
+        <div class="content">
+            <hr/>
+            <h1><a href="/" id="webd_title">Система <span style="color:#0E0EB3;">Курс</span></a></h1>
+            {% block content %}
     <h1>Управление дисциплинами</h1>
     <p>Добро пожаловать, {{ user.fio }}!</p>
 
@@ -22,7 +32,6 @@
         <input type="file" name="plan_file" accept=".xls,.xlsx" required>
         <button type="submit">Загрузить учебный план</button>
     </form>
-
     {% if elective_courses %}
         <h2>Дисциплины по выбору</h2>
         <table border="1" cellpadding="5" cellspacing="0">
@@ -46,5 +55,23 @@
     {% endif %}
 
     <a href="{{ url_for('logout') }}">Выйти</a>
-</body>
+            {% endblock %}
+            <hr/>
+        </div>
+        <div class="footer">
+            <div style="width:450px;">
+            <address>
+                <!--i>Замечания по работе сервера: <a href="mailto:webmaster@cs.petrsu.ru">webmaster@cs.karelia.ru</a></i><br/-->
+                <i>Вопросы и замечания по системе Курс: <a href="mailto:chistyak@cs.petrsu.ru">Д.Б.Чистяков</a></i><br/>
+                <i style="display:none">Последние изменения: <span id="webd_last_edited"></span></i>
+            </address>
+            </div>
+            <div style="width:550px; text-align:right; float:right;">
+                <i>Руководитель работы: заведующий кафедрой ИМО, Ю.А.Богоявленский</i><br/>
+                <i>Разработчики: А.А.Андреев, В.М.Димитров</i><br/>
+                <i>Системный администратор: Е.И. Рыбин, В.А. Пономарев</i>
+            </div>
+        </div>
+    </body>
 </html>
+

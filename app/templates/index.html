@@ -1,10 +1,8 @@
-<!DOCTYPE html>
-<html lang="ru">
-<head>
-    <meta charset="UTF-8">
-    <title>Выбор дисциплин</title>
-</head>
-<body>
+{% extends "layout.html" %}
+
+{% block title %}Запись на дисциплины{% endblock %}
+
+{% block content %}
     <h1>Запись на дисциплины по выбору</h1>
     <p>Добро пожаловать, {{ user.fio }}!</p>
 
@@ -13,5 +11,4 @@
     <!-- Здесь позже можно будет вывести список доступных дисциплин -->
     
     <a href="{{ url_for('logout') }}">Выйти</a>
-</body>
-</html>
+{% endblock %}

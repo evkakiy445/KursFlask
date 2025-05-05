@@ -1,0 +1,35 @@
+{% extends 'layout.html' %}
+
+{% block title %}Отчеты{% endblock %}
+
+{% block content %}
+    <h1>Отчеты</h1>
+
+    <p>Здесь вы можете сформировать отчеты о студентах, записанных на дисциплины.</p>
+
+    <form method="POST" action="{{ url_for('reports') }}">
+        <label for="discipline">Выберите дисциплину:</label>
+        <select name="discipline" id="discipline">
+            {% for discipline in disciplines %}
+                <option value="{{ discipline.id }}">{{ discipline.name }}</option>
+            {% endfor %}
+        </select><br><br>
+
+        <label for="start_date">Начальная дата (необязательно):</label>
+        <input type="date" name="start_date" id="start_date"><br><br>
+
+        <label for="end_date">Конечная дата (необязательно):</label>
+        <input type="date" name="end_date" id="end_date"><br><br>
+
+        <button type="submit">Сформировать отчет</button>
+    </form>
+
+    {% if report_url %}
+        <p><a href="{{ report_url }}">Скачать отчет</a></p>
+    {% endif %}
+
+    <br>
+    <a href="{{ url_for('manage_courses_bp.manage_courses') }}">Управление дисциплинами</a><br>
+    <a href="{{ url_for('manage_students_courses') }}">Управление студентами и дисциплинами</a><br>
+    <a href="{{ url_for('logout') }}">Выйти</a>
+{% endblock %}

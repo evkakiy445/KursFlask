@@ -5,8 +5,8 @@
         <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='style_cs.css') }}"/>
         <link media="all" rel="stylesheet" type="text/css" href="{{ url_for('static', filename='webd.css') }}"/>
         <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.3/jquery.min.js"></script>
-        <script src="{{ url_for('static', filename='webd.js') }}"></script>
-        <title>{% block title %}Регистрация{% endblock %}</title>
+        <script src="{{ url_for('static', filename='webd.js') }}"></script>        
+        <title>{% block title %}Система Курс{% endblock %}</title>
     </head>
     <body>
         <div id='js_check'>В вашем обозревателе отключен JavaScript либо установлен плагин NoScript. Для корректной работы данного сайта JavaScript необходим.</div>
@@ -15,38 +15,6 @@
             <hr/>
             <h1><a href="/" id="webd_title">Система <span style="color:#0E0EB3;">Курс</span></a></h1>
             {% block content %}
-    <h1>Регистрация</h1>
-    <form method="POST">
-        <label for="fio">ФИО:</label>
-        <input type="text" id="fio" name="fio" required><br>
-
-        <label for="direction">Направление:</label>
-        <select id="direction" name="direction" required>
-            <option value="" disabled selected>Выберите направление</option>
-            {% for direction in directions %}
-                <option value="{{ direction.id }}">{{ direction.name }}</option>
-            {% endfor %}
-        </select><br>
-
-        <label for="group_number">Номер группы:</label>
-        <input type="text" id="group_number" name="group_number" required><br>
-
-        <label for="login">Логин:</label>
-        <input type="text" id="login" name="login" required><br>
-
-        <label for="password">Пароль:</label>
-        <input type="password" id="password" name="password" required><br>
-
-        <label for="role">Роль:</label>
-        <select name="role" id="role" required>
-            <option value="Cтудент">Студент</option>
-            <option value="Администратор">Администратор</option>
-            <option value="Специалист дирекции">Специалист дирекции</option>
-            <option value="Преподаватель">Преподаватель</option>
-        </select><br>
-
-        <button type="submit">Зарегистрироваться</button>
-    </form>
             {% endblock %}
             <hr/>
         </div>
@@ -66,4 +34,3 @@
         </div>
     </body>
 </html>
-

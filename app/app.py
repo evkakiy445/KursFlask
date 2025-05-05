@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect, url_for, jsonify, session
+from flask import Flask, render_template, request, redirect, url_for, session
 from flask_bcrypt import Bcrypt
 from flask_jwt_extended import JWTManager
 from app.models import db, User
@@ -25,7 +25,7 @@ def create_app():
             return redirect(url_for('login'))
         user = User.query.get(user_id)
         if user.role == 'Специалист дирекции':
-            return redirect(url_for('manage_courses_bp.manage_courses'))
+            return redirect(url_for('director_dashboard'))
         else:
             return render_template('index.html', user=user)
 
@@ -38,14 +38,14 @@ def create_app():
             user = User.query.filter_by(login=login_input).first()
 
             if not user or not bcrypt.check_password_hash(user.password, password_input):
-                return jsonify({"msg": "Неверный логин или пароль"}), 401
+                return render_template('login.html', error="Неверный логин или пароль")
 
             session['user_id'] = user.id
 
             print(f"Роль пользователя: {user.role}")
 
             if user.role == 'Специалист дирекции':
-                return redirect(url_for('manage_courses_bp.manage_courses'))
+                return redirect(url_for('director_dashboard'))
             else:
                 return redirect(url_for('index'))
 
@@ -80,6 +80,27 @@ def create_app():
     def logout():
         session.pop('user_id', None)
         return redirect(url_for('login'))
+
+    # ==========================================================
+    # Добавление manage_students_courses здесь, в основном приложении
+    @app.route('/manage_students_courses')
+    def manage_students_courses():
+        return render_template('manage_students_courses.html')
+    # ==========================================================
+
+        # === НОВЫЙ МАРШРУТ ДЛЯ ОТЧЕТОВ ===
+    @app.route('/reports')
+    def reports():
+        return render_template('reports.html')
+        
+    @app.route('/director_dashboard')
+    def director_dashboard():
+        user_id = session.get('user_id')
+        if not user_id:
+            return redirect(url_for('login'))
+
+        user = User.query.get(user_id)
+        return render_template('director_dashboard.html', user=user)
 
     return app
 
