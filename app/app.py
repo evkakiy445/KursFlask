@@ -96,6 +96,10 @@ def create_app():
     def reports():
         return render_template('reports.html')
         
+    @app.route('/manage_students_courses')
+    def manage_students_courses():
+        return render_template('manage_students_courses.html')
+
     @app.route('/director_dashboard')
     def director_dashboard():
         user_id = session.get('user_id')

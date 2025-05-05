@@ -1,0 +1,27 @@
+{% extends 'layout.html' %}
+
+{% block content %}
+<h2>Доступные дисциплины по выбору</h2>
+
+<form action="{{ url_for('logout') }}" method="get">
+    <button type="submit">Выйти</button>
+</form>
+
+<p>ФИО: {{ user.fio }}</p>
+<p>Группа: {{ user.group_number }}</p>
+<p>Курс: {{ user.group_number[2] }}</p>
+
+{% if error %}
+    <p style="color: red;">{{ error }}</p>
+{% endif %}
+
+{% if elective_courses %}
+    <ul>
+        {% for course in elective_courses %}
+            <li>{{ course.name }} (Семестр {{ course.semester }})</li>
+        {% endfor %}
+    </ul>
+{% else %}
+    <p>Нет доступных дисциплин для вашего курса и направления.</p>
+{% endif %}
+{% endblock %}

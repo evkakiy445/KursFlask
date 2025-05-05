@@ -35,7 +35,7 @@ def student_courses():
     ).all()
 
     return render_template(
-        'index.html',
+        'choose_courses.html',
         user=user,
         elective_courses=elective_courses
     )
