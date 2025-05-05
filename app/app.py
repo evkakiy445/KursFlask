@@ -3,6 +3,7 @@ from flask_bcrypt import Bcrypt
 from flask_jwt_extended import JWTManager
 from app.models import db, User
 from app.manage_courses import manage_courses_bp
+from app.student_courses import student_courses_bp
 from app.models import Direction
 
 def create_app():
@@ -17,6 +18,7 @@ def create_app():
     jwt = JWTManager(app)
 
     app.register_blueprint(manage_courses_bp)
+    app.register_blueprint(student_courses_bp)
 
     @app.route('/')
     def index():
@@ -27,7 +29,7 @@ def create_app():
         if user.role == 'Специалист дирекции':
             return redirect(url_for('director_dashboard'))
         else:
-            return render_template('index.html', user=user)
+            return render_template('layout.html', user=user)
 
     @app.route('/login', methods=['GET', 'POST'])
     def login():
@@ -46,10 +48,13 @@ def create_app():
 
             if user.role == 'Специалист дирекции':
                 return redirect(url_for('director_dashboard'))
+            elif user.role.lower() == 'студент':
+                return redirect(url_for('student_courses.student_courses'))
             else:
                 return redirect(url_for('index'))
 
         return render_template('login.html')
+
 
     @app.route('/register', methods=['GET', 'POST'])
     def register():
@@ -63,7 +68,14 @@ def create_app():
 
             hashed_password = bcrypt.generate_password_hash(password).decode('utf-8')
 
-            new_user = User(fio=fio, direction_id=direction_id, group_number=group_number, login=login, password=hashed_password, role=role)
+            new_user = User(
+                fio=fio,
+                direction_id=direction_id,
+                group_number=group_number,
+                login=login,
+                password=hashed_password,
+                role=role
+            )
 
             db.session.add(new_user)
             db.session.commit()
@@ -72,7 +84,6 @@ def create_app():
 
             return redirect(url_for('login'))
 
-        # Получаем все направления для выпадающего списка
         directions = Direction.query.all()
         return render_template('register.html', directions=directions)
 

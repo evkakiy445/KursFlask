@@ -6,7 +6,7 @@
     <p>Добро пожаловать, {{ user.fio }}!</p>
 
     <a href="{{ url_for('manage_courses_bp.manage_courses') }}">Управление дисциплинами</a><br>
-    <a href="{{ url_for('manage_students_courses') }}">Управление студентами и дисциплинами</a><br>
+    <a href="{{ url_for('student_courses.student_courses') }}">Управление студентами и дисциплинами</a><br>
     <a href="{{ url_for('reports') }}">Отчеты</a><br>
 
     <a href="{{ url_for('logout') }}">Выйти</a>
