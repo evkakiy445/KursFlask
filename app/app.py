@@ -81,14 +81,6 @@ def create_app():
         session.pop('user_id', None)
         return redirect(url_for('login'))
 
-    # ==========================================================
-    # Добавление manage_students_courses здесь, в основном приложении
-    @app.route('/manage_students_courses')
-    def manage_students_courses():
-        return render_template('manage_students_courses.html')
-    # ==========================================================
-
-        # === НОВЫЙ МАРШРУТ ДЛЯ ОТЧЕТОВ ===
     @app.route('/reports')
     def reports():
         return render_template('reports.html')
