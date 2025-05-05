@@ -29,7 +29,7 @@ def create_app():
         if user.role == 'Специалист дирекции':
             return redirect(url_for('director_dashboard'))
         else:
-            return render_template('layout.html', user=user)
+            return render_template('index.html', user=user)
 
     @app.route('/login', methods=['GET', 'POST'])
     def login():

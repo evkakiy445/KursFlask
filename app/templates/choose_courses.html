@@ -3,25 +3,39 @@
 {% block content %}
 <h2>Доступные дисциплины по выбору</h2>
 
-<form action="{{ url_for('logout') }}" method="get">
-    <button type="submit">Выйти</button>
-</form>
-
 <p>ФИО: {{ user.fio }}</p>
 <p>Группа: {{ user.group_number }}</p>
 <p>Курс: {{ user.group_number[2] }}</p>
 
-{% if error %}
-    <p style="color: red;">{{ error }}</p>
-{% endif %}
+<form method="POST">
+    {% for idx, pair in course_pairs %}
+        <fieldset>
+            <legend>Выберите одну дисциплину из пары:</legend>
+            {% for course in pair %}
+                <label>
+                    <input type="radio" name="pair_{{ idx }}" value="{{ course.id }}">
+                    {{ course.name }} (Семестр {{ course.semester }})
+                </label><br>
+            {% endfor %}
+        </fieldset>
+        <br>
+    {% endfor %}
 
-{% if elective_courses %}
-    <ul>
-        {% for course in elective_courses %}
-            <li>{{ course.name }} (Семестр {{ course.semester }})</li>
-        {% endfor %}
-    </ul>
-{% else %}
-    <p>Нет доступных дисциплин для вашего курса и направления.</p>
-{% endif %}
+
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            <ul class="flashes">
+                {% for category, message in messages %}
+                    <li class="flash {{ category }}">{{ message }}</li>
+                {% endfor %}
+            </ul>
+        {% endif %}
+    {% endwith %}
+
+    <button type="submit">Сохранить выбор</button>
+</form>
+
+<a href="{{ url_for('logout') }}">Выйти</a>
+<a href="{{ url_for('student_courses.student_courses') }}">Назад</a>
 {% endblock %}
