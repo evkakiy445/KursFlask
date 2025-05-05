@@ -3,7 +3,7 @@ from flask_bcrypt import Bcrypt
 from flask_jwt_extended import JWTManager
 from app.models import db, User
 from app.manage_courses import manage_courses_bp
-
+from app.models import Direction
 
 def create_app():
     app = Flask(__name__)
@@ -55,7 +55,7 @@ def create_app():
     def register():
         if request.method == 'POST':
             fio = request.form['fio']
-            direction = request.form['direction']
+            direction_id = request.form['direction']
             group_number = request.form['group_number']
             login = request.form['login']
             password = request.form['password']
@@ -63,7 +63,7 @@ def create_app():
 
             hashed_password = bcrypt.generate_password_hash(password).decode('utf-8')
 
-            new_user = User(fio=fio, direction=direction, group_number=group_number, login=login, password=hashed_password, role=role)
+            new_user = User(fio=fio, direction_id=direction_id, group_number=group_number, login=login, password=hashed_password, role=role)
 
             db.session.add(new_user)
             db.session.commit()
@@ -72,7 +72,9 @@ def create_app():
 
             return redirect(url_for('login'))
 
-        return render_template('register.html')
+        # Получаем все направления для выпадающего списка
+        directions = Direction.query.all()
+        return render_template('register.html', directions=directions)
 
     @app.route('/logout')
     def logout():

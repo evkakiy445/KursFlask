@@ -12,7 +12,12 @@
         <input type="text" id="fio" name="fio" required><br>
 
         <label for="direction">Направление:</label>
-        <input type="text" id="direction" name="direction" required><br>
+        <select id="direction" name="direction" required>
+            <option value="" disabled selected>Выберите направление</option>
+            {% for direction in directions %}
+                <option value="{{ direction.id }}">{{ direction.name }}</option>
+            {% endfor %}
+        </select><br>
 
         <label for="group_number">Номер группы:</label>
         <input type="text" id="group_number" name="group_number" required><br>

@@ -27,71 +27,93 @@ def process_excel_file(filepath):
 
         df = pd.read_excel(filepath, sheet_name=sheet_name, header=None)
 
-        # Поиск строки с направлением
-        direction_row = None
+        direction_code = None
+        direction_name = None
+        
         for i, row in df.iterrows():
             for cell in row:
                 if isinstance(cell, str) and '09.03.02' in cell:
-                    direction_row = row
-                    break
-            if direction_row is not None:
+                    parts = cell.split('-')
+                    if len(parts) > 1:
+                        direction_code = '09.03.02'
+                        direction_name = parts[-1].strip()
+                        break
+            if direction_code:
                 break
 
-        if direction_row is None:
+        if not direction_code:
             return None, "Не найдена информация о направлении"
 
-        direction_info = direction_row[0]
-        direction_code = '09.03.02'
-        direction_name = direction_info.split('-')[-1].strip()
-
         elective_courses = []
-        current_semester = None
-        start_index = None
-
-        # Поиск строки с "Дисциплины по выбору"
+        
         for i, row in df.iterrows():
-            if any(isinstance(cell, str) and 'дисциплины по выбору' in cell.lower() for cell in row):
-                start_index = i + 1
-                break
+            for j, cell in enumerate(row):
+                if isinstance(cell, str) and 'дисциплины по выбору' in cell.lower():
+                    semester = None
+                    for k in range(j, len(row)):
+                        if isinstance(row[k], (int, float)) and 1 <= row[k] <= 8:
+                            semester = int(row[k])
+                            break
+                    
+                    if semester:
+                        for k in range(i+1, min(i+20, len(df))):
+                            course_name = df.iloc[k, j]
+                            if isinstance(course_name, str) and course_name.strip() and not any(
+                                x in course_name.lower() for x in ['дисциплины по выбору', 'семестр', 'курс']
+                            ):
+                                elective_courses.append({
+                                    'name': course_name.strip(),
+                                    'semester': semester
+                                })
+                            elif pd.isna(course_name) or (isinstance(course_name, str) and not course_name.strip()) or not isinstance(course_name, str):
+                                break
 
-        if start_index is None:
-            return None, "Не найдены 'Дисциплины по выбору' в файле"
+        for sheet in xls.sheet_names:
+            if any(x in sheet.lower() for x in ['курс', 'course']):
+                sheet_df = pd.read_excel(filepath, sheet_name=sheet, header=None)
+                
+                semester = None
+                if '1' in sheet:
+                    semester = 1 if 'семестр' not in sheet.lower() else None
+                elif '2' in sheet:
+                    semester = 3 if 'семестр' not in sheet.lower() else None
+                elif '3' in sheet:
+                    semester = 5 if 'семестр' not in sheet.lower() else None
+                elif '4' in sheet:
+                    semester = 7 if 'семестр' not in sheet.lower() else None
+                
+                if not semester:
+                    continue
+                
+                for i, row in sheet_df.iterrows():
+                    for j, cell in enumerate(row):
+                        if isinstance(cell, str) and 'дисциплины по выбору' in cell.lower():
+                            for k in range(i+1, min(i+20, len(sheet_df))):
+                                course_name = sheet_df.iloc[k, j]
+                                if isinstance(course_name, str) and course_name.strip() and not any(
+                                    x in course_name.lower() for x in ['дисциплины по выбору', 'семестр', 'курс']
+                                ):
+                                    elective_courses.append({
+                                        'name': course_name.strip(),
+                                        'semester': semester
+                                    })
+                                elif pd.isna(course_name) or (isinstance(course_name, str) and not course_name.strip()) or not isinstance(course_name, str):
+                                    break
 
-        # Поиск текущего семестра (в предыдущих строках)
-        for k in range(start_index - 1, max(start_index - 6, 0), -1):
-            row = df.iloc[k]
-            for cell in row:
-                if isinstance(cell, str) and 'семестр' in cell.lower():
-                    try:
-                        current_semester = int(cell.split()[0])
-                    except:
-                        current_semester = None
-
-        # Чтение дисциплин
-        for j in range(start_index, len(df)):
-            row = df.iloc[j]
-            if row.isnull().all():
-                break  # конец списка дисциплин
-
-            # Поиск названия в первом непустом текстовом столбце
-            course_name = None
-            for cell in row:
-                if isinstance(cell, str) and cell.strip():
-                    course_name = cell.strip()
-                    break
-
-            if course_name and not any(x in course_name.lower() for x in ['дисциплины по выбору', 'семестр', 'курс']):
-                elective_courses.append({
-                    'name': course_name,
-                    'semester': current_semester
-                })
+        seen = set()
+        unique_courses = []
+        for course in elective_courses:
+            key = (course['name'], course['semester'])
+            if key not in seen:
+                seen.add(key)
+                unique_courses.append(course)
 
         return {
             'direction': {
                 'code': direction_code,
                 'name': direction_name
             },
-            'elective_courses': elective_courses
+            'elective_courses': unique_courses
         }, None
 
     except Exception as e:
