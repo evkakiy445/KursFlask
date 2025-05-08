@@ -7,33 +7,41 @@
 <p>Группа: {{ user.group_number }}</p>
 <p>Курс: {{ user.group_number[2] }}</p>
 
+{% if is_enrollment_open %}
+    <p style="color: green;">Запись на дисциплины открыта</p>
+{% else %}
+    <p style="color: red;">Запись на дисциплины закрыта</p>
+{% endif %}
+
+{% if chosen_courses %}
+    <h3>Вы уже выбрали следующие дисциплины:</h3>
+    <ul>
+        {% for course in chosen_courses %}
+            <li>{{ course.name }} (Семестр {{ course.semester }})</li>
+        {% endfor %}
+    </ul>
+    <hr>
+{% endif %}
+
 <form method="POST">
-    {% for idx, pair in course_pairs %}
-        <fieldset>
-            <legend>Выберите одну дисциплину из пары:</legend>
-            {% for course in pair %}
-                <label>
-                    <input type="radio" name="pair_{{ idx }}" value="{{ course.id }}">
-                    {{ course.name }} (Семестр {{ course.semester }})
-                </label><br>
-            {% endfor %}
-        </fieldset>
-        <br>
-    {% endfor %}
-
-
-
-    {% with messages = get_flashed_messages(with_categories=true) %}
-        {% if messages %}
-            <ul class="flashes">
-                {% for category, message in messages %}
-                    <li class="flash {{ category }}">{{ message }}</li>
+    {% if not is_enrollment_open %}
+        <p>Вы не можете выбрать дисциплину, так как запись закрыта.</p>
+    {% else %}
+        {% for idx, pair in course_pairs %}
+            <fieldset>
+                <legend>Выберите одну дисциплину из пары:</legend>
+                {% for course in pair %}
+                    <label>
+                        <input type="radio" name="pair_{{ idx }}" value="{{ course.id }}"
+                            {% if course.id in chosen_course_ids %}checked{% endif %}>
+                        {{ course.name }} (Семестр {{ course.semester }})
+                    </label><br>
                 {% endfor %}
-            </ul>
-        {% endif %}
-    {% endwith %}
-
-    <button type="submit">Сохранить выбор</button>
+            </fieldset>
+            <br>
+        {% endfor %}
+        <button type="submit">Сохранить выбор</button>
+    {% endif %}
 </form>
 
 <a href="{{ url_for('logout') }}">Выйти</a>

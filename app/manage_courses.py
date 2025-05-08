@@ -1,7 +1,7 @@
 import os
 from flask import Blueprint, render_template, redirect, url_for, session, request, flash
 from werkzeug.utils import secure_filename
-from app.models import User, Direction, ElectiveCourse, db
+from app.models import User, Direction, ElectiveCourse, Settings, db
 import pandas as pd
 
 manage_courses_bp = Blueprint('manage_courses_bp', __name__)
@@ -131,11 +131,33 @@ def manage_courses():
 
     directions = Direction.query.all()
     elective_courses = ElectiveCourse.query.all()
-
+    settings = Settings.query.first()
     return render_template('manage_courses.html',
-                           user=user,
-                           directions=directions,
-                           elective_courses=elective_courses)
+                       user=user,
+                       directions=directions,
+                       elective_courses=elective_courses,
+                       settings=settings)
+
+@manage_courses_bp.route('/toggle-enrollment', methods=['POST'])
+def toggle_enrollment():
+    user_id = session.get('user_id')
+    if not user_id:
+        return redirect(url_for('login'))
+    user = User.query.get(user_id)
+    if user.role != 'Специалист дирекции':
+        return redirect(url_for('index'))
+
+    settings = Settings.query.first()
+    if not settings:
+        settings = Settings(is_enrollment_open=True)
+        db.session.add(settings)
+    else:
+        settings.is_enrollment_open = not settings.is_enrollment_open
+
+    db.session.commit()
+    flash(f"Запись на дисциплины {'открыта' if settings.is_enrollment_open else 'закрыта'}", "success")
+    return redirect(url_for('manage_courses_bp.manage_courses'))
+
 
 @manage_courses_bp.route('/upload-plan', methods=['POST'])
 def upload_plan():

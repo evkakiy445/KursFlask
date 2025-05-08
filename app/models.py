@@ -41,3 +41,7 @@ class StudentElectiveCourse(db.Model):
 
     def __repr__(self):
         return f"<StudentElectiveCourse user_id={self.user_id}, elective_course_id={self.elective_course_id}>"
+
+class Settings(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    is_enrollment_open = db.Column(db.Boolean, default=True)

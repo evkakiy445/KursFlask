@@ -28,6 +28,16 @@
       {% endif %}
     {% endwith %}
 
+    <form method="POST" action="{{ url_for('manage_courses_bp.toggle_enrollment') }}">
+        <button type="submit">
+            {% if settings and settings.is_enrollment_open %}
+                Закрыть запись на дисциплины
+            {% else %}
+                Открыть запись на дисциплины
+            {% endif %}
+        </button>
+    </form>
+
     <form action="{{ url_for('manage_courses_bp.upload_plan') }}" method="post" enctype="multipart/form-data">
         <input type="file" name="plan_file" accept=".xls,.xlsx" required>
         <button type="submit">Загрузить учебный план</button>
