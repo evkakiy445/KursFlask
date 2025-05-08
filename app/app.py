@@ -5,7 +5,7 @@ from app.models import db, User
 from app.manage_courses import manage_courses_bp
 from app.student_courses import student_courses_bp
 from app.models import Direction
-
+from app.reports import reports_bp 
 def create_app():
     app = Flask(__name__)
 
@@ -19,6 +19,7 @@ def create_app():
 
     app.register_blueprint(manage_courses_bp)
     app.register_blueprint(student_courses_bp)
+    app.register_blueprint(reports_bp)
 
     @app.route('/')
     def index():
@@ -91,10 +92,6 @@ def create_app():
     def logout():
         session.pop('user_id', None)
         return redirect(url_for('login'))
-
-    @app.route('/reports')
-    def reports():
-        return render_template('reports.html')
         
     @app.route('/manage_students_courses')
     def manage_students_courses():
