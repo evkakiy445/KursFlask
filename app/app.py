@@ -51,6 +51,8 @@ def create_app():
                 return redirect(url_for('director_dashboard'))
             elif user.role.lower() == 'студент':
                 return redirect(url_for('student_courses.student_courses'))
+            elif user.role.lower() == 'преподаватель':
+                return redirect(url_for('reports_bp.generate_reports'))
             else:
                 return redirect(url_for('index'))
 
@@ -61,11 +63,21 @@ def create_app():
     def register():
         if request.method == 'POST':
             fio = request.form['fio']
-            direction_id = request.form['direction']
-            group_number = request.form['group_number']
+            role = request.form['role'].strip().capitalize()
             login = request.form['login']
             password = request.form['password']
-            role = request.form['role'].strip().capitalize()
+
+            # Проверка наличия полей для студента
+            if role == 'Студент':
+                direction_id = request.form.get('direction')  # Используем get(), чтобы избежать ошибки
+                group_number = request.form.get('group_number')
+
+                # Если одно из полей пустое
+                if not direction_id or not group_number:
+                    return render_template('register.html', directions=Direction.query.all(), error="Направление и номер группы обязательны для студента")
+            else:
+                direction_id = None
+                group_number = None
 
             hashed_password = bcrypt.generate_password_hash(password).decode('utf-8')
 
@@ -87,6 +99,8 @@ def create_app():
 
         directions = Direction.query.all()
         return render_template('register.html', directions=directions)
+
+
 
     @app.route('/logout')
     def logout():

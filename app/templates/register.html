@@ -1,69 +1,92 @@
 <!DOCTYPE html>
 <html>
-    <head>
-        <meta charset="utf-8" http-equiv="X-UA-Compatible" content="IE=edge"/>
-        <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='style_cs.css') }}"/>
-        <link media="all" rel="stylesheet" type="text/css" href="{{ url_for('static', filename='webd.css') }}"/>
-        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.3/jquery.min.js"></script>
-        <script src="{{ url_for('static', filename='webd.js') }}"></script>
-        <title>{% block title %}Регистрация{% endblock %}</title>
-    </head>
-    <body>
-        <div id='js_check'>В вашем обозревателе отключен JavaScript либо установлен плагин NoScript. Для корректной работы данного сайта JavaScript необходим.</div>
-        {{header|safe}}
-        <div class="content">
-            <hr/>
-            <h1><a href="/" id="webd_title">Система <span style="color:#0E0EB3;">Курс</span></a></h1>
-            {% block content %}
-    <h1>Регистрация</h1>
-    <form method="POST">
-        <label for="fio">ФИО:</label>
-        <input type="text" id="fio" name="fio" required><br>
+<head>
+    <meta charset="utf-8" http-equiv="X-UA-Compatible" content="IE=edge"/>
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='style_cs.css') }}"/>
+    <link media="all" rel="stylesheet" type="text/css" href="{{ url_for('static', filename='webd.css') }}"/>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.3/jquery.min.js"></script>
+    <script src="{{ url_for('static', filename='webd.js') }}"></script>
+    <title>{% block title %}Регистрация{% endblock %}</title>
+    <script>
+        $(document).ready(function() {
+            function toggleFields() {
+                const role = $('#role').val();
+                if (role === 'Студент') {
+                    $('#direction_field').show();
+                    $('#direction').prop('disabled', false);
+                    $('#group_number_field').show();
+                    $('#group_number').prop('disabled', false);
+                } else {
+                    $('#direction_field').hide();
+                    $('#direction').prop('disabled', true);
+                    $('#group_number_field').hide();
+                    $('#group_number').prop('disabled', true);
+                }
+            }
 
-        <label for="direction">Направление:</label>
-        <select id="direction" name="direction" required>
-            <option value="" disabled selected>Выберите направление</option>
-            {% for direction in directions %}
-                <option value="{{ direction.id }}">{{ direction.name }}</option>
-            {% endfor %}
-        </select><br>
+            $('#role').on('change', toggleFields);
+            toggleFields();
+        });
+    </script>
+</head>
+<body>
+    <div id='js_check'>В вашем обозревателе отключен JavaScript либо установлен плагин NoScript. Для корректной работы данного сайта JavaScript необходим.</div>
+    {{header|safe}}
+    <div class="content">
+        <hr/>
+        <h1><a href="/" id="webd_title">Система <span style="color:#0E0EB3;">Курс</span></a></h1>
+        {% block content %}
+        <h1>Регистрация</h1>
+        <form method="POST">
+            <label for="role">Роль:</label>
+            <select name="role" id="role" required>
+                <option value="Студент">Студент</option>
+                <option value="Администратор">Администратор</option>
+                <option value="Специалист дирекции">Специалист дирекции</option>
+                <option value="Преподаватель">Преподаватель</option>
+            </select><br>
+            
+            <label for="fio">ФИО:</label>
+            <input type="text" id="fio" name="fio" required><br>
 
-        <label for="group_number">Номер группы:</label>
-        <input type="text" id="group_number" name="group_number" required><br>
+            <div id="direction_field">
+                <label for="direction">Направление:</label>
+                <select id="direction" name="direction">
+                    <option value="" disabled selected>Выберите направление</option>
+                    {% for direction in directions %}
+                        <option value="{{ direction.id }}">{{ direction.name }}</option>
+                    {% endfor %}
+                </select><br>
+            </div>
 
-        <label for="login">Логин:</label>
-        <input type="text" id="login" name="login" required><br>
+            <div id="group_number_field">
+                <label for="group_number">Номер группы:</label>
+                <input type="text" id="group_number" name="group_number"><br>
+            </div>
 
-        <label for="password">Пароль:</label>
-        <input type="password" id="password" name="password" required><br>
+            <label for="login">Логин:</label>
+            <input type="text" id="login" name="login" required><br>
 
-        <label for="role">Роль:</label>
-        <select name="role" id="role" required>
-            <option value="Студент">Студент</option>
-            <option value="Администратор">Администратор</option>
-            <option value="Специалист дирекции">Специалист дирекции</option>
-            <option value="Преподаватель">Преподаватель</option>
-        </select><br>
+            <label for="password">Пароль:</label>
+            <input type="password" id="password" name="password" required><br>
 
-        <button type="submit">Зарегистрироваться</button>
-    </form>
-            {% endblock %}
-            <hr/>
-        </div>
-        <div class="footer">
-            <div style="width:450px;">
+            <button type="submit">Зарегистрироваться</button>
+        </form>
+        {% endblock %}
+        <hr/>
+    </div>
+    <div class="footer">
+        <div style="width:450px;">
             <address>
-                <!--i>Замечания по работе сервера: <a href="mailto:webmaster@cs.petrsu.ru">webmaster@cs.karelia.ru</a></i><br/-->
                 <i>Вопросы и замечания по системе Курс: <a href="mailto:chistyak@cs.petrsu.ru">Д.Б.Чистяков</a></i><br/>
                 <i style="display:none">Последние изменения: <span id="webd_last_edited"></span></i>
             </address>
-            </div>
-            <div style="width:550px; text-align:right; float:right;">
-                <i>Руководитель работы: заведующий кафедрой ИМО, Ю.А.Богоявленский</i><br/>
-                <i>Разработчики: А.А.Андреев, В.М.Димитров</i><br/>
-                <i>Системный администратор: Е.И. Рыбин, В.А. Пономарев</i>
-            </div>
         </div>
-    </body>
+        <div style="width:550px; text-align:right; float:right;">
+            <i>Руководитель работы: заведующий кафедрой ИМО, Ю.А.Богоявленский</i><br/>
+            <i>Разработчики: А.А.Андреев, В.М.Димитров</i><br/>
+            <i>Системный администратор: Е.И. Рыбин, В.А. Пономарев</i>
+        </div>
+    </div>
+</body>
 </html>
-
