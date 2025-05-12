@@ -59,9 +59,9 @@ def student_courses():
     is_enrollment_open = settings.is_enrollment_open if settings else False
 
     return render_template('choose_courses.html',
-                       user=user,
-                       course_pairs=list(enumerate(course_pairs)),
-                       chosen_courses=chosen_courses,
-                       chosen_course_ids=chosen_course_ids,
-                       is_enrollment_open=is_enrollment_open)
+                           user=user,
+                           course_pairs=list(enumerate(course_pairs)),
+                           chosen_courses=chosen_courses,
+                           chosen_course_ids=chosen_course_ids,
+                           is_enrollment_open=is_enrollment_open)
 

@@ -1,11 +1,13 @@
 from flask import Flask, render_template, request, redirect, url_for, session
 from flask_bcrypt import Bcrypt
 from flask_jwt_extended import JWTManager
-from app.models import db, User
+from app.models import db, User, ElectiveCourse, StudentElectiveCourse, Settings
 from app.manage_courses import manage_courses_bp
 from app.student_courses import student_courses_bp
 from app.models import Direction
 from app.reports import reports_bp 
+from app.models import db
+from sqlalchemy import text
 def create_app():
     app = Flask(__name__)
 
@@ -107,9 +109,51 @@ def create_app():
         session.pop('user_id', None)
         return redirect(url_for('login'))
         
-    @app.route('/manage_students_courses')
+    @app.route('/manage_students_courses', methods=['GET', 'POST'])
     def manage_students_courses():
-        return render_template('manage_students_courses.html')
+        if request.method == 'POST':
+            student_id = request.form.get('student')
+            course_id = request.form.get('course')
+            action = request.form.get('action')
+
+            if student_id and course_id:
+                if action == 'assign':
+                    insert_query = text("""
+                        INSERT INTO student_elective_courses (user_id, elective_course_id)
+                        VALUES (:student_id, :course_id)
+                    """)
+                    db.session.execute(insert_query, {'student_id': student_id, 'course_id': course_id})
+                elif action == 'remove':
+                    delete_query = text("""
+                        DELETE FROM student_elective_courses
+                        WHERE user_id = :student_id AND elective_course_id = :course_id
+                    """)
+                    db.session.execute(delete_query, {'student_id': student_id, 'course_id': course_id})
+
+                db.session.commit()
+
+        # Получаем все данные для отображения
+        student_query = text("SELECT id, fio FROM users WHERE role = 'Студент'")
+        students = db.session.execute(student_query).fetchall()
+
+        course_query = text("SELECT id, name FROM elective_course")
+        courses = db.session.execute(course_query).fetchall()
+
+        assigned_query = text("""
+            SELECT users.fio, elective_course.name AS course_name
+            FROM student_elective_courses
+            JOIN users ON student_elective_courses.user_id = users.id
+            JOIN elective_course ON student_elective_courses.elective_course_id = elective_course.id
+            ORDER BY users.fio;
+        """)
+        assigned = db.session.execute(assigned_query).fetchall()
+
+        return render_template(
+            'manage_students_courses.html',
+            students=students,
+            courses=courses,
+            assigned=assigned
+        )
 
     @app.route('/director_dashboard')
     def director_dashboard():

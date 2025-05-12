@@ -1,0 +1,44 @@
+{% extends 'layout.html' %}
+
+{% block title %}Подтверждение изменений дисциплин{% endblock %}
+
+{% block content %}
+<h1>Подтверждение изменений дисциплин</h1>
+<p>Направление: {{ direction.name }} ({{ direction.code }})</p>
+
+<form action="{{ url_for('manage_courses_bp.confirm_upload') }}" method="POST">
+    <h2>Дисциплины, которые будут добавлены</h2>
+    {% if to_add %}
+        <ul>
+            {% for course in to_add %}
+                <li>
+                    <label>
+                        Название:
+                        <input type="text" name="course_name_{{ loop.index0 }}" value="{{ course.name }}">
+                    </label>
+                    (семестр {{ course.semester }})
+                    <input type="hidden" name="course_semester_{{ loop.index0 }}" value="{{ course.semester }}">
+                </li>
+            {% endfor %}
+        </ul>
+        <input type="hidden" name="to_add_count" value="{{ to_add|length }}">
+    {% else %}
+        <p>Нет новых дисциплин для добавления.</p>
+    {% endif %}
+
+    <h2>Дисциплины, которые будут удалены</h2>
+    {% if to_delete %}
+        <ul>
+            {% for course in to_delete %}
+                <li>{{ course.name }} (семестр {{ course.semester }})</li>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <p>Нет дисциплин для удаления.</p>
+    {% endif %}
+
+    <button type="submit">Подтвердить изменения</button>
+</form>
+
+<a href="{{ url_for('manage_courses_bp.manage_courses') }}">Отмена</a>
+{% endblock %}

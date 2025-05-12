@@ -1,87 +1,61 @@
-<!DOCTYPE html>
-<html>
-    <head>
-        <meta charset="utf-8" http-equiv="X-UA-Compatible" content="IE=edge"/>
-        <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='style_cs.css') }}"/>
-        <link media="all" rel="stylesheet" type="text/css" href="{{ url_for('static', filename='webd.css') }}"/>
-        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.3/jquery.min.js"></script>
-        <script src="{{ url_for('static', filename='webd.js') }}"></script>        
-        <title>{% block title %}Управление дисциплинами{% endblock %}</title>
-    </head>
-    <body>
-        <div id='js_check'>В вашем обозревателе отключен JavaScript либо установлен плагин NoScript. Для корректной работы данного сайта JavaScript необходим.</div>
-        {{header|safe}}
-        <div class="content">
-            <hr/>
-            <h1><a href="/" id="webd_title">Система <span style="color:#0E0EB3;">Курс</span></a></h1>
-            {% block content %}
-    <h1>Управление дисциплинами</h1>
-    <p>Добро пожаловать, {{ user.fio }}!</p>
+{% extends 'layout.html' %}
 
-    {% with messages = get_flashed_messages(with_categories=true) %}
-      {% if messages %}
-        {% for category, message in messages %}
-          <div style="color: {% if category == 'success' %}green{% else %}red{% endif %};">
-            {{ message }}
-          </div>
-        {% endfor %}
-      {% endif %}
-    {% endwith %}
+{% block title %}Управление дисциплинами{% endblock %}
 
-    <form method="POST" action="{{ url_for('manage_courses_bp.toggle_enrollment') }}">
-        <button type="submit">
-            {% if settings and settings.is_enrollment_open %}
-                Закрыть запись на дисциплины
-            {% else %}
-                Открыть запись на дисциплины
-            {% endif %}
-        </button>
-    </form>
+{% block content %}
+<h1>Управление дисциплинами</h1>
+<p>Добро пожаловать, {{ user.fio }}!</p>
 
-    <form action="{{ url_for('manage_courses_bp.upload_plan') }}" method="post" enctype="multipart/form-data">
-        <input type="file" name="plan_file" accept=".xls,.xlsx" required>
-        <button type="submit">Загрузить учебный план</button>
-    </form>
-    {% if elective_courses %}
-        <h2>Дисциплины по выбору</h2>
-        <table border="1" cellpadding="5" cellspacing="0">
-            <thead>
+{% with messages = get_flashed_messages(with_categories=true) %}
+  {% if messages %}
+    {% for category, message in messages %}
+      <div style="color: {% if category == 'success' %}green{% else %}red{% endif %};">
+        {{ message }}
+      </div>
+    {% endfor %}
+  {% endif %}
+{% endwith %}
+
+<form method="POST" action="{{ url_for('manage_courses_bp.toggle_enrollment') }}">
+    <button type="submit">
+        {% if settings and settings.is_enrollment_open %}
+            Закрыть запись на дисциплины
+        {% else %}
+            Открыть запись на дисциплины
+        {% endif %}
+    </button>
+</form>
+
+<form action="{{ url_for('manage_courses_bp.upload_plan') }}" method="post" enctype="multipart/form-data">
+    <input type="file" name="plan_file" accept=".xls,.xlsx" required>
+    <button type="submit">Загрузить учебный план</button>
+</form>
+
+{% if elective_courses %}
+    <h2>Дисциплины по выбору</h2>
+    <table border="1" cellpadding="5" cellspacing="0">
+        <thead>
+            <tr>
+                <th>Название дисциплины</th>
+                <th>Семестр</th>
+                <th>Направление</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for course in elective_courses %}
                 <tr>
-                    <th>Название дисциплины</th>
-                    <th>Семестр</th>
-                    <th>Направление</th>
+                    <td>{{ course.name }}</td>
+                    <td>{{ course.semester }}</td>
+                    <td>{{ course.direction.name }}</td>
                 </tr>
-            </thead>
-            <tbody>
-                {% for course in elective_courses %}
-                    <tr>
-                        <td>{{ course.name }}</td>
-                        <td>{{ course.semester }}</td>
-                        <td>{{ course.direction.name }}</td>
-                    </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-    {% endif %}
+            {% endfor %}
+        </tbody>
+    </table>
+{% endif %}
 
-    <a href="{{ url_for('logout') }}">Выйти</a>
-            {% endblock %}
-            <hr/>
-        </div>
-        <div class="footer">
-            <div style="width:450px;">
-            <address>
-                <!--i>Замечания по работе сервера: <a href="mailto:webmaster@cs.petrsu.ru">webmaster@cs.karelia.ru</a></i><br/-->
-                <i>Вопросы и замечания по системе Курс: <a href="mailto:chistyak@cs.petrsu.ru">Д.Б.Чистяков</a></i><br/>
-                <i style="display:none">Последние изменения: <span id="webd_last_edited"></span></i>
-            </address>
-            </div>
-            <div style="width:550px; text-align:right; float:right;">
-                <i>Руководитель работы: заведующий кафедрой ИМО, Ю.А.Богоявленский</i><br/>
-                <i>Разработчики: А.А.Андреев, В.М.Димитров</i><br/>
-                <i>Системный администратор: Е.И. Рыбин, В.А. Пономарев</i>
-            </div>
-        </div>
-    </body>
-</html>
-
+<br>
+<a href="{{ url_for('manage_students_courses') }}">Управление студентами и дисциплинами</a><br>
+<a href="{{ url_for('reports_bp.generate_reports') }}">Сгенерировать отчет</a>
+<a href="{{ url_for('director_dashboard') }}">Панель управления</a><br>
+<a href="{{ url_for('logout') }}">Выйти</a>
+{% endblock %}

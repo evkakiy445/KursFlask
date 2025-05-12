@@ -18,7 +18,7 @@ def generate_reports():
 
         # Регистрация шрифта, поддерживающего кириллицу
         rl_config.warnOnMissingFont = 0
-        pdfmetrics.registerFont(TTFont('FreeTTF', r'C:\\Users\\ilya\Desktop\\Kurs\\fonts\\DejaVuSans.ttf'))
+        pdfmetrics.registerFont(TTFont('FreeTTF', r'C:\\Users\\ilya\\Downloads\\KursTest\\app\\app\\fonts\\DejaVuSans.ttf'))
         c.setFont("FreeTTF", 12)
 
         c.drawString(100, height - 40, "Отчет по дисциплинам и студентам")
