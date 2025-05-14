@@ -1,6 +1,6 @@
 from flask import Blueprint, render_template, session, redirect, url_for, request, flash
 from app.models import db, User, ElectiveCourse, StudentElectiveCourse, Settings
-
+from datetime import datetime
 student_courses_bp = Blueprint('student_courses', __name__, template_folder='templates')
 
 @student_courses_bp.route('/student_courses', methods=['GET', 'POST'])
@@ -19,11 +19,15 @@ def student_courses():
     except (IndexError, ValueError):
         course_year = 1
 
-    semesters = [course_year * 2 - 1, course_year * 2]
+    # Определение текущего семестра
+    current_month = datetime.now().month
+    is_spring = 2 <= current_month <= 7  # Весенний семестр
+    semester = course_year * 2 if is_spring else course_year * 2 - 1
 
+    # Фильтрация по одному текущему семестру
     elective_courses = ElectiveCourse.query.filter(
         ElectiveCourse.direction_id == user.direction_id,
-        ElectiveCourse.semester.in_(semesters)
+        ElectiveCourse.semester == semester
     ).all()
 
     course_pairs = [elective_courses[i:i+2] for i in range(0, len(elective_courses), 2)]
@@ -33,7 +37,6 @@ def student_courses():
     ).all()
     chosen_course_ids = {course.id for course in chosen_courses}
 
-    # Флаг, если уже сделан выбор
     has_chosen_courses = bool(chosen_courses)
 
     if request.method == 'POST':
@@ -46,7 +49,6 @@ def student_courses():
 
             selected_ids.append(int(selected_id))
 
-        # Удаляем предыдущие выборы
         StudentElectiveCourse.query.filter_by(user_id=user.id).delete()
 
         for selected_id in selected_ids:
@@ -54,7 +56,6 @@ def student_courses():
             db.session.add(student_course)
 
         db.session.commit()
-
         flash("Ваш выбор сохранён.")
         return redirect(url_for('student_courses.student_courses'))
 
@@ -68,6 +69,7 @@ def student_courses():
                            chosen_course_ids=chosen_course_ids,
                            is_enrollment_open=is_enrollment_open,
                            has_chosen_courses=has_chosen_courses)
+
 
 
 @student_courses_bp.route('/cancel_enrollment', methods=['POST'])
