@@ -9,18 +9,25 @@
 <form action="{{ url_for('manage_courses_bp.confirm_upload') }}" method="POST">
     <h2>Дисциплины, которые будут добавлены</h2>
     {% if to_add %}
-        <ul>
-            {% for course in to_add %}
-                <li>
-                    <label>
-                        Название:
-                        <input type="text" name="course_name_{{ loop.index0 }}" value="{{ course.name }}">
-                    </label>
-                    (семестр {{ course.semester }})
-                    <input type="hidden" name="course_semester_{{ loop.index0 }}" value="{{ course.semester }}">
-                </li>
-            {% endfor %}
-        </ul>
+        <table>
+            <thead>
+                <tr>
+                    <th>Выбрать</th>
+                    <th>Название</th>
+                    <th>Семестр</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for course in to_add %}
+                    <tr>
+                        <td><input type="checkbox" name="course_add_{{ loop.index0 }}" value="1" checked></td>
+                        <td><input type="text" name="course_name_{{ loop.index0 }}" value="{{ course.name }}"></td>
+                        <td>{{ course.semester }}</td>
+                        <input type="hidden" name="course_semester_{{ loop.index0 }}" value="{{ course.semester }}">
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
         <input type="hidden" name="to_add_count" value="{{ to_add|length }}">
     {% else %}
         <p>Нет новых дисциплин для добавления.</p>
@@ -28,13 +35,46 @@
 
     <h2>Дисциплины, которые будут удалены</h2>
     {% if to_delete %}
-        <ul>
-            {% for course in to_delete %}
-                <li>{{ course.name }} (семестр {{ course.semester }})</li>
-            {% endfor %}
-        </ul>
+        <table>
+            <thead>
+                <tr>
+                    <th>Название</th>
+                    <th>Семестр</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for course in to_delete %}
+                    <tr>
+                        <td>{{ course.name }}</td>
+                        <td>{{ course.semester }}</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
     {% else %}
         <p>Нет дисциплин для удаления.</p>
+    {% endif %}
+
+    <h2>Дисциплины, которые остались без изменений</h2>
+    {% if no_changes %}
+        <table>
+            <thead>
+                <tr>
+                    <th>Название</th>
+                    <th>Семестр</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for course in no_changes %}
+                    <tr>
+                        <td>{{ course.name }}</td>
+                        <td>{{ course.semester }}</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <p>Нет дисциплин без изменений.</p>
     {% endif %}
 
     <button type="submit">Подтвердить изменения</button>

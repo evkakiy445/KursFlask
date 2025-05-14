@@ -145,23 +145,37 @@ def process_excel_file(filepath):
         return None, f"Ошибка обработки файла: {str(e)}"
 
 
-@manage_courses_bp.route('/manage-courses')
+@manage_courses_bp.route('/manage-courses', methods=['GET', 'POST'])
 def manage_courses():
     user_id = session.get('user_id')
     if not user_id:
         return redirect(url_for('login'))
+    
     user = User.query.get(user_id)
     if user.role != 'Специалист дирекции':
         return redirect(url_for('index'))
-
+    
+    # Получаем все направления
     directions = Direction.query.all()
-    elective_courses = ElectiveCourse.query.all()
+    
+    # Получаем выбранное направление из параметра запроса
+    direction_filter = request.args.get('direction_filter', None)
+    
+    # Если фильтр выбран, показываем дисциплины только для этого направления
+    if direction_filter:
+        elective_courses = ElectiveCourse.query.filter_by(direction_id=direction_filter).all()
+    else:
+        elective_courses = ElectiveCourse.query.all()
+    
+    # Получаем настройки
     settings = Settings.query.first()
+    
     return render_template('manage_courses.html',
-                       user=user,
-                       directions=directions,
-                       elective_courses=elective_courses,
-                       settings=settings)
+                           user=user,
+                           directions=directions,
+                           elective_courses=elective_courses,
+                           settings=settings,
+                           selected_direction_id=direction_filter)
 
 @manage_courses_bp.route('/toggle-enrollment', methods=['POST'])
 def toggle_enrollment():
@@ -189,6 +203,7 @@ def upload_plan():
     user_id = session.get('user_id')
     if not user_id:
         return redirect(url_for('login'))
+
     user = User.query.get(user_id)
     if user.role != 'Специалист дирекции':
         return redirect(url_for('index'))
@@ -198,7 +213,6 @@ def upload_plan():
         return redirect(url_for('manage_courses_bp.manage_courses'))
 
     file = request.files['plan_file']
-
     if file.filename == '':
         flash('Файл не выбран', 'error')
         return redirect(url_for('manage_courses_bp.manage_courses'))
@@ -206,55 +220,62 @@ def upload_plan():
     if file and allowed_file(file.filename):
         filename = secure_filename(file.filename)
         upload_path = os.path.join(UPLOAD_FOLDER, filename)
-
         os.makedirs(UPLOAD_FOLDER, exist_ok=True)
         file.save(upload_path)
 
         result, error = process_excel_file(upload_path)
-
         if error:
             flash(f'Ошибка обработки файла: {error}', 'error')
             return redirect(url_for('manage_courses_bp.manage_courses'))
 
-        direction = Direction.query.filter_by(code=result['direction']['code']).first()
+        direction_data = result['direction']
+        direction = Direction.query.filter_by(code=direction_data['code']).first()
         if not direction:
-            direction = Direction(
-                code=result['direction']['code'],
-                name=result['direction']['name']
-            )
+            direction = Direction(code=direction_data['code'], name=direction_data['name'])
             db.session.add(direction)
             db.session.commit()
 
-        # Сравниваем дисциплины: новые и старые
         new_courses = result['elective_courses']
         old_courses = ElectiveCourse.query.filter_by(direction_id=direction.id).all()
 
-        # Список для новых дисциплин, которых нет в старом списке
         to_add = []
-        for course in new_courses:
-            existing_course = next((c for c in old_courses if c.name == course['name'] and c.semester == course['semester']), None)
-            if not existing_course:
-                to_add.append(course)
-
-        # Список для дисциплин, которые нужно удалить
         to_delete = []
-        for course in old_courses:
-            if not any(c['name'] == course.name and c['semester'] == course.semester for c in new_courses):
-                to_delete.append(course)
+        no_changes = []  # Список дисциплин, которые не изменились
 
-        # Сохраняем изменения в сессии, чтобы отобразить во всплывающем окне
+        for course in new_courses:
+            exists = next((c for c in old_courses if c.name == course['name'] and c.semester == course['semester']), None)
+            if not exists:
+                to_add.append(course)  # Добавляем новый курс
+            else:
+                no_changes.append(course)  # Курс без изменений
+
+        for course in old_courses:
+            exists = any(c['name'] == course.name and c['semester'] == course.semester for c in new_courses)
+            if not exists:
+                to_delete.append({
+                    'id': course.id,
+                    'name': course.name,
+                    'semester': course.semester
+                })
+
         session['pending_upload'] = {
-            'direction': result['direction'],
+            'direction': direction_data,
             'to_add': to_add,
-            'to_delete': to_delete
+            'to_delete': to_delete,
+            'no_changes': no_changes  # Добавляем список без изменений
         }
 
-        # Перенаправляем на страницу с подтверждением изменений
-        return render_template('confirm_course_changes.html', to_add=to_add, to_delete=to_delete, direction=direction)
-
+        return render_template(
+            'confirm_course_changes.html',
+            to_add=to_add,
+            to_delete=to_delete,
+            no_changes=no_changes,  # Передаем в шаблон
+            direction=direction
+        )
     else:
         flash('Недопустимый формат файла. Разрешены только .xls и .xlsx', 'error')
         return redirect(url_for('manage_courses_bp.manage_courses'))
+
 
 @manage_courses_bp.route('/confirm-upload', methods=['POST'])
 def confirm_upload():
@@ -264,7 +285,7 @@ def confirm_upload():
         return redirect(url_for('manage_courses_bp.manage_courses'))
 
     direction_data = data['direction']
-    to_delete = data['to_delete']
+    to_delete = data['to_delete']  # список словарей вида {'id': ...}
 
     direction = Direction.query.filter_by(code=direction_data['code']).first()
     if not direction:
@@ -288,15 +309,17 @@ def confirm_upload():
     updated_courses = []
     count = int(request.form.get('to_add_count', 0))
     for i in range(count):
-        name = request.form.get(f'course_name_{i}', '').strip()
-        semester = request.form.get(f'course_semester_{i}')
-        if name and semester:
-            updated_courses.append({
-                'name': name,
-                'semester': int(semester)
-            })
+        # Проверка, был ли выбран чекбокс для добавления дисциплины
+        if request.form.get(f'course_add_{i}') == '1':
+            name = request.form.get(f'course_name_{i}', '').strip()
+            semester = request.form.get(f'course_semester_{i}')
+            if name and semester:
+                updated_courses.append({
+                    'name': name,
+                    'semester': int(semester)
+                })
 
-    # Проверка на дубликаты: если ничего не изменилось — пропустить
+    # Проверка на дубликаты
     old_courses = ElectiveCourse.query.filter_by(direction_id=direction.id).all()
     old_courses_set = set((c.name, c.semester) for c in old_courses)
     new_courses_set = set((c['name'], c['semester']) for c in updated_courses)
@@ -318,5 +341,26 @@ def confirm_upload():
     session.pop('pending_upload', None)
     flash('Данные успешно обновлены', 'success')
     return redirect(url_for('manage_courses_bp.manage_courses'))
+
+@manage_courses_bp.route('/delete-all-courses', methods=['POST'])
+def delete_all_courses():
+    if request.method == 'POST':
+        try:
+            # Удаляем все записи в таблице StudentElectiveCourse, связанные с дисциплинами
+            StudentElectiveCourse.query.delete()
+
+            # Удаляем все дисциплины из таблицы ElectiveCourse
+            ElectiveCourse.query.delete()
+
+            # Фиксируем изменения в базе данных
+            db.session.commit()
+
+            flash('Все дисциплины и связанные записи успешно удалены', 'success')
+        except Exception as e:
+            db.session.rollback()
+            flash(f'Произошла ошибка при удалении дисциплин: {e}', 'error')
+
+        return redirect(url_for('manage_courses_bp.manage_courses'))
+
 
 

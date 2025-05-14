@@ -8,32 +8,54 @@
 
 {% with messages = get_flashed_messages(with_categories=true) %}
   {% if messages %}
-    {% for category, message in messages %}
-      <div style="color: {% if category == 'success' %}green{% else %}red{% endif %};">
-        {{ message }}
-      </div>
-    {% endfor %}
+    <div class="messages">
+      {% for category, message in messages %}
+        <div class="alert {% if category == 'success' %}alert-success{% else %}alert-danger{% endif %}">
+          {{ message }}
+        </div>
+      {% endfor %}
+    </div>
   {% endif %}
 {% endwith %}
 
-<form method="POST" action="{{ url_for('manage_courses_bp.toggle_enrollment') }}">
-    <button type="submit">
-        {% if settings and settings.is_enrollment_open %}
-            Закрыть запись на дисциплины
-        {% else %}
-            Открыть запись на дисциплины
-        {% endif %}
-    </button>
-</form>
+<div class="action-buttons">
+  <form method="POST" action="{{ url_for('manage_courses_bp.toggle_enrollment') }}">
+      <button type="submit" class="btn btn-primary">
+          {% if settings and settings.is_enrollment_open %}
+              Закрыть запись на дисциплины
+          {% else %}
+              Открыть запись на дисциплины
+          {% endif %}
+      </button>
+  </form>
 
-<form action="{{ url_for('manage_courses_bp.upload_plan') }}" method="post" enctype="multipart/form-data">
-    <input type="file" name="plan_file" accept=".xls,.xlsx" required>
-    <button type="submit">Загрузить учебный план</button>
-</form>
+  <form action="{{ url_for('manage_courses_bp.upload_plan') }}" method="post" enctype="multipart/form-data">
+      <div class="file-upload">
+          <input type="file" name="plan_file" accept=".xls,.xlsx" required>
+          <button type="submit" class="btn btn-secondary">Загрузить учебный план</button>
+      </div>
+  </form>
+</div>
+
+<div class="filter-section">
+  <h2>Фильтровать дисциплины по направлению</h2>
+  <form method="GET" action="{{ url_for('manage_courses_bp.manage_courses') }}">
+      <label for="direction_filter">Направление:</label>
+      <select name="direction_filter" id="direction_filter">
+          <option value="">Все направления</option>
+          {% for direction in directions %}
+              <option value="{{ direction.id }}" {% if direction.id == selected_direction_id %}selected{% endif %}>
+                  {{ direction.name }}
+              </option>
+          {% endfor %}
+      </select>
+      <button type="submit" class="btn btn-primary">Применить фильтр</button>
+  </form>
+</div>
 
 {% if elective_courses %}
     <h2>Дисциплины по выбору</h2>
-    <table border="1" cellpadding="5" cellspacing="0">
+    <table class="table table-bordered">
         <thead>
             <tr>
                 <th>Название дисциплины</th>
@@ -53,9 +75,63 @@
     </table>
 {% endif %}
 
-<br>
-<a href="{{ url_for('manage_students_courses') }}">Управление студентами и дисциплинами</a><br>
-<a href="{{ url_for('reports_bp.generate_reports') }}">Сгенерировать отчет</a>
-<a href="{{ url_for('director_dashboard') }}">Панель управления</a><br>
-<a href="{{ url_for('logout') }}">Выйти</a>
+<div class="navigation-links">
+    <a href="{{ url_for('manage_students_courses') }}" class="btn btn-link">Управление студентами и дисциплинами</a>
+    <a href="{{ url_for('reports_bp.generate_reports') }}" class="btn btn-link">Сгенерировать отчет</a>
+    <a href="{{ url_for('director_dashboard') }}" class="btn btn-link">Панель управления</a>
+    <a href="{{ url_for('logout') }}" class="btn btn-link">Выйти</a>
+</div>
+{% endblock %}
+
+{% block styles %}
+<style>
+    .action-buttons {
+        margin-bottom: 20px;
+    }
+    .file-upload {
+        display: flex;
+        align-items: center;
+    }
+    .file-upload input {
+        margin-right: 10px;
+    }
+    .filter-section {
+        margin-top: 30px;
+        margin-bottom: 30px;
+    }
+    .filter-section select {
+        margin-right: 10px;
+    }
+    .table {
+        width: 100%;
+        margin-top: 20px;
+        border-collapse: collapse;
+    }
+    .table th, .table td {
+        padding: 8px;
+        text-align: left;
+    }
+    .table th {
+        background-color: #f4f4f4;
+    }
+    .navigation-links {
+        margin-top: 20px;
+    }
+    .navigation-links .btn-link {
+        margin-right: 15px;
+    }
+    .alert {
+        padding: 10px;
+        margin-bottom: 15px;
+        border-radius: 5px;
+    }
+    .alert-success {
+        background-color: #d4edda;
+        color: #155724;
+    }
+    .alert-danger {
+        background-color: #f8d7da;
+        color: #721c24;
+    }
+</style>
 {% endblock %}

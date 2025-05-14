@@ -24,6 +24,7 @@ class Direction(db.Model):
     elective_courses = db.relationship('ElectiveCourse', backref='direction', lazy=True)
 
 class ElectiveCourse(db.Model):
+    __tablename__ = 'elective_course'
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(200), nullable=False)
     semester = db.Column(db.Integer)
@@ -37,10 +38,11 @@ class StudentElectiveCourse(db.Model):
     elective_course_id = db.Column(db.Integer, db.ForeignKey('elective_course.id'), nullable=False)
 
     user = db.relationship('User', backref=db.backref('elective_courses', lazy=True))
-    elective_course = db.relationship('ElectiveCourse', backref=db.backref('students', lazy=True))
+    elective_course = db.relationship('ElectiveCourse', backref=db.backref('students', lazy=True, cascade='all, delete'))
 
     def __repr__(self):
         return f"<StudentElectiveCourse user_id={self.user_id}, elective_course_id={self.elective_course_id}>"
+
 
 class Settings(db.Model):
     id = db.Column(db.Integer, primary_key=True)
